@@ -8,7 +8,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
   plugins: [
     vue(),
-	base: '/cmtseng.github.io/',
+	base: '/',
     vueDevTools(),
   ],
   resolve: {
