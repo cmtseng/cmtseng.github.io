@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>終端機存取... 歡迎回來</title>
+    <!-- 引入 'Roboto Mono' 字體，增加科技感 -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* 全域樣式設定 */
+        body {
+            margin: 0;
+            overflow: hidden; /* 隱藏滾動條，營造全螢幕終端機感 */
+            background-color: #000; /* 全黑背景 */
+            font-family: 'Roboto Mono', monospace; /* 科技感字體 */
+            color: #0F0; /* 預設綠色字體 */
+            display: flex;
+            flex-direction: column; /* 讓內容垂直排列 */
+            height: 100vh; /* 佔滿整個視窗高度 */
+            text-shadow: 0 0 5px #0F0, 0 0 10px #0F0; /* 霓虹發光效果 */
+            position: relative;
+            cursor: none; /* 隱藏滑鼠游標，更像真實終端機 */
+        }
+
+        /* 頂部狀態列樣式 */
+        .top-bar {
+            background-color: #001a00; /* 深綠色背景 */
+            color: #0F0;
+            padding: 5px 10px;
+            font-size: 0.8em;
+            display: flex;
+            justify-content: space-between; /* 元素分散對齊 */
+            align-items: center;
+            border-bottom: 1px solid #0A0; /* 底部邊框 */
+            box-shadow: 0 0 8px #0A0; /* 陰影發光 */
+            position: relative;
+            z-index: 100; /* 確保在最上層 */
+        }
+
+        .top-bar span {
+            margin-right: 20px;
+        }
+
+        /* 主終端機內容區塊樣式 */
+        .terminal-container {
+            flex-grow: 1; /* 佔滿所有剩餘垂直空間 */
+            overflow: hidden; /* 隱藏內建滾動條，使用 JavaScript 模擬滾動 */
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box; /* 確保 padding 不影響寬高計算 */
+            user-select: none; /* 防止使用者選取文字 */
+            white-space: pre-wrap; /* 保留換行和空格，讓文本顯示如預期 */
+            word-break: break-all; /* 防止長單詞溢出 */
+        }
+
+        /* 終端機模擬的文字輸出區 */
+        .terminal-output {
+            height: 100%; /* 佔滿父容器高度 */
+            overflow: hidden; /* 確保內容不會超出邊界 */
+            font-size: 1.1em;
+            line-height: 1.4;
+            opacity: 0.9; /* 稍微透明 */
+            text-shadow: 0 0 3px #0F0; /* 字體發光效果 */
+        }
+
+        /* 輸入提示符號樣式 */
+        .prompt {
+            color: #0F0;
+            animation: blink-prompt 1s step-end infinite; /* 提示符號閃爍動畫 */
+        }
+
+        /* 提示符號閃爍動畫關鍵影格 */
+        @keyframes blink-prompt {
+            from, to { color: #0F0; } /* 顯示綠色 */
+            50% { color: transparent; } /* 透明 */
+        }
+
+        /* 故障特效樣式 */
+        .glitch-text {
+            animation: glitch 2s infinite alternate; /* 故障動畫循環播放 */
+            text-shadow: 0 0 15px #0F0, 0 0 20px #0F0; /* 更強烈的發光 */
+        }
+
+        /* 故障動畫關鍵影格 */
+        @keyframes glitch {
+            0% {
+                transform: translate(0);
+                text-shadow: 0 0 5px #0F0, 0 0 10px #0F0;
+            }
+            20% {
+                transform: translate(-2px, 2px);
+                text-shadow: 0 0 5px #0F0, 0 0 10px #0F0, 2px -2px 0 #F00; /* 紅色位移 */
+            }
+            40% {
+                transform: translate(2px, -2px);
+                text-shadow: 0 0 5px #0F0, 0 0 10px #0F0, -2px 2px 0 #00F; /* 藍色位移 */
+            }
+            60% {
+                transform: translate(-1px, -1px);
+                text-shadow: 0 0 5px #0F0, 0 0 10px #0F0, 1px 1px 0 #F0F; /* 紫色位移 */
+            }
+            80% {
+                transform: translate(1px, 1px);
+                text-shadow: 0 0 5px #0F0, 0 0 10px #0F0, -1px -1px 0 #0FF; /* 青色位移 */
+            }
+            100% {
+                transform: translate(0);
+                text-shadow: 0 0 5px #0F0, 0 0 10px #0F0;
+            }
+        }
+
+        /* ASCII 藝術字樣式 */
+        .ascii-art {
+            font-size: 0.7em;
+            line-height: 0.8; /* 緊湊行高 */
+            margin-bottom: 20px;
+            color: #0A0; /* 稍微暗一點的綠色 */
+            text-shadow: none; /* 無發光 */
+            opacity: 0.7; /* 稍微透明 */
+        }
+
+        /* 模擬光標樣式 */
+        .cursor {
+            background-color: #0F0; /* 綠色光標 */
+            width: 10px;
+            height: 1.1em; /* 與字體高度一致 */
+            display: inline-block;
+            vertical-align: middle; /* 垂直對齊文字 */
+            animation: blink-cursor 1s step-end infinite; /* 光標閃爍動畫 */
+        }
+
+        /* 光標閃爍動畫關鍵影格 */
+        @keyframes blink-cursor {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* 底部資訊列樣式 */
+        .bottom-info {
+            background-color: #001a00; /* 深綠色背景 */
+            color: #0F0;
+            padding: 5px 10px;
+            font-size: 0.8em;
+            text-align: right;
+            border-top: 1px solid #0A0; /* 頂部邊框 */
+            box-shadow: 0 0 8px #0A0; /* 陰影發光 */
+            position: relative;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <!-- 頂部狀態列 -->
+    <div class="top-bar">
+        <span>[ 系統核心介面 V7.3.2 ]</span>
+        <span>[ 連線狀態: <span class="glitch-text">穩定</span> ]</span>
+        <span id="current-time"></span> <!-- 顯示當前時間 -->
+    </div>
+
+    <!-- 主終端機內容區 -->
+    <div class="terminal-container">
+        <div class="terminal-output" id="terminal-output">
+            <!-- ASCII 藝術字 -->
+            <pre class="ascii-art">
+  _  _         _  _                 
+ | || |       | || |                
+ | || |_  ___ | || |_ _   _  ___ ___
+ |__   _||_  _||__   _| | | || _ `_ \
+    | |   | |    | | | |_| || | | | |
+    |_|   |_|    |_|  \__,_||_| |_|
+            </pre>
+            <span class="glitch-text">ACCESS GRANTED. WELCOME BACK.</span><br><br>
+            <!-- 初始提示符號與光標 -->
+            <span class="prompt">root@cyber-node:~#</span><span class="cursor"></span>
+        </div>
+    </div>
+
+    <!-- 底部資訊列 -->
+    <div class="bottom-info">
+        <span>[ 加密級別: AES-256 ]</span>
+        <span>[ 數據流量: 12.4 MB/s ]</span>
+    </div>
+
+    <script>
+        const terminalOutput = document.getElementById('terminal-output');
+        const currentTimeSpan = document.getElementById('current-time');
+        // 預定義的駭客訊息陣列
+        const lines = [
+            "Initializing network protocols...",
+            "Establishing secure connection to mainframe...",
+            "Authentication successful. User: Admin-007",
+            "Loading classified data caches...",
+            "Compiling kernel modules...",
+            "Accessing encrypted file system: /dev/null/data_vault",
+            "Executing intrusion detection bypass sequence...",
+            "Scanning for vulnerabilities...",
+            "Vulnerability found: [ 0x00A3F2C1 ] - Patching...",
+            "Patch applied. System integrity: 99.8%",
+            "Deploying stealth mode protocols...",
+            "Generating randomized IP addresses...",
+            "Listening for incoming data streams...",
+            "Decrypting intercepted communications...",
+            "Analyzing biometric authentication patterns...",
+            "Bypassing retinal scan protocols...",
+            "Accessing classified satellite imagery...",
+            "Retrieving target coordinates: [ REDACTED ]",
+            "Uploading payload: Project Chimera v1.2...",
+            "Transfer complete. Deleting trace files...",
+            "System logout initiated. Goodbye."
+        ];
+        let lineIndex = 0;
+        const typingSpeed = 50; // 每字元打字速度（毫秒），數字越小越快
+        const lineDelay = 1500; // 每行之間的延遲（毫秒）
+
+        // 模擬打字機效果
+        function typeWriter() {
+            if (lineIndex < lines.length) {
+                const currentLine = lines[lineIndex];
+                let charIndex = 0;
+                // 每隔 typingSpeed 毫秒輸入一個字元
+                const typingInterval = setInterval(() => {
+                    if (charIndex < currentLine.length) {
+                        const span = document.createElement('span');
+                        span.textContent = currentLine[charIndex];
+                        span.style.color = getRandomColor(); // 隨機顏色增加科技感
+                        terminalOutput.appendChild(span);
+                        charIndex++;
+                        // 讓滾動條自動向下滾動，確保新內容可見
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                    } else {
+                        clearInterval(typingInterval); // 停止當前行的打字
+                        terminalOutput.appendChild(document.createTextNode('\n')); // 新增換行
+                        lineIndex++;
+                        // 延遲後開始下一行的打字
+                        setTimeout(typeWriter, lineDelay);
+                    }
+                }, typingSpeed);
+            } else {
+                // 所有行都打完後，顯示最終的命令提示符號和光標
+                terminalOutput.appendChild(document.createElement('br'));
+                const finalPrompt = document.createElement('span');
+                finalPrompt.className = 'prompt';
+                finalPrompt.textContent = 'root@cyber-node:~# ';
+                terminalOutput.appendChild(finalPrompt);
+                const cursor = document.createElement('span');
+                cursor.className = 'cursor';
+                terminalOutput.appendChild(cursor);
+            }
+        }
+
+        // 產生隨機綠色調的顏色
+        function getRandomColor() {
+            const colors = ['#0F0', '#0A0', '#0C0', '#0E0', '#0B0']; // 綠色系的變化
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // 更新頂部狀態列的時間
+        function updateTime() {
+            const now = new Date();
+            // 格式化日期和時間
+            currentTimeSpan.textContent = `[ ${now.toLocaleDateString()} ${now.toLocaleTimeString()} ]`;
+        }
+
+        // 頁面載入完成後開始執行所有效果
+        window.onload = () => {
+            typeWriter(); // 開始打字機效果
+            setInterval(updateTime, 1000); // 每秒更新時間
+            updateTime(); // 立即更新一次時間
+        };
+    </script>
+</body>
+</html>
